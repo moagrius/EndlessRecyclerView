@@ -67,7 +67,7 @@ public class MockClient {
     new Thread(new Runnable(){
       @Override
       public void run() {
-        int delay = mRandom.nextInt(1200);
+        int delay = 500 + mRandom.nextInt(700);
         Log.d(MockClient.class.getSimpleName(), "latency=" + delay);
         try {
           Thread.sleep(delay);

@@ -105,10 +105,8 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     }
   }
 
-  @Override
-  public void fill(int quantity){
-    super.fill(quantity);
-    Log.d("DEA", "fill request");
+  private boolean canUseMoreDataFromServer(){
+    return mMediaItems.size() < mLimit || !mNullPositions.isEmpty();
   }
 
   @Override
@@ -122,10 +120,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     }
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
     notifyDataSetChanged();
-  }
-
-  private boolean canUseMoreDataFromServer(){
-    return mMediaItems.size() < mLimit || !mNullPositions.isEmpty();
   }
 
   /**

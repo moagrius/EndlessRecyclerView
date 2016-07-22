@@ -20,21 +20,20 @@ public class MainActivity extends AppCompatActivity {
 
     final DemoEndlessAdapter demoEndlessAdapter = new DemoEndlessAdapter(this);
     demoEndlessAdapter.setOnItemClickListener(mOnItemClickListener);
-    demoEndlessAdapter.setLimit(300);
+    demoEndlessAdapter.setLimit(1000);
 
     mEndlessRecyclerView = (EndlessRecyclerView) findViewById(R.id.endlessrecyclerview_main);
-    mEndlessRecyclerView.setCanExpectConsistentItemHeight(true);
+    mEndlessRecyclerView.setCanExpectConsistentItemSize(true);
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
     mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
+    mEndlessRecyclerView.start(30);
     updateEndlessRecyclerViewThreshold();
-
-    demoEndlessAdapter.fill(100);
 
   }
 
   private void updateEndlessRecyclerViewThreshold(){
-    mEndlessRecyclerView.setThreshold(mEndlessRecyclerView.getHeight() * 2);
+    mEndlessRecyclerView.setVerticalThreshold(mEndlessRecyclerView.getHeight() * 2);
   }
 
   private View.OnClickListener mOnItemClickListener = new View.OnClickListener() {

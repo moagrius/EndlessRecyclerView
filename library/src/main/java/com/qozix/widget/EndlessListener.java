@@ -15,7 +15,7 @@ public class EndlessListener extends RecyclerView.OnScrollListener {
 
   @Override
   public final void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-    mEndlessRecyclerView.onEndlessVerticalScroll();
+    mEndlessRecyclerView.onEndlessScroll(dx != 0, dy != 0);
   }
 
 }
