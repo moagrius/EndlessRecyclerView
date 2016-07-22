@@ -1,0 +1,83 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="100sp"
+                android:padding="10dp">
+
+  <!-- has data -->
+  <LinearLayout
+      android:id="@+id/endless_row_ready"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="gone">
+
+    <ImageView
+        android:id="@+id/imageview_endless_row_thumb"
+        android:layout_width="40sp"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:orientation="vertical">
+
+      <TextView
+          android:id="@+id/textview_endless_row_media"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:drawableLeft="@drawable/ic_headphones"
+          android:drawablePadding="3dp"
+          android:textSize="10sp"
+          android:textColor="#07ba7b"
+          android:text="AUDIO/VIDEO"
+          android:visibility="gone" />
+
+      <TextView
+          android:id="@+id/textview_endless_row_title"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:minHeight="20sp"
+          android:maxLines="2"
+          android:textColor="#404040"
+          android:textSize="16sp"
+          android:ellipsize="end" />
+
+      <TextView
+        android:id="@+id/textview_endless_row_authors"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:minHeight="20sp"
+        android:textColor="#8b8d8e"
+        android:textSize="14sp" />
+
+    </LinearLayout>
+
+  </LinearLayout>
+
+  <!-- waiting for data -->
+  <LinearLayout
+      android:id="@+id/endless_row_waiting"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:orientation="horizontal">
+
+    <ProgressBar
+        android:id="@+id/endless_row_progress"
+        android:layout_width="30sp"
+        android:layout_height="30sp"
+        android:layout_gravity="left|center_vertical"
+        android:indeterminate="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="10dp"
+        android:layout_gravity="left|center_vertical"
+        android:textSize="14sp"
+        android:textColor="#888888"
+        android:text="Loading..." />
+
+
+  </LinearLayout>
+
+</RelativeLayout>
