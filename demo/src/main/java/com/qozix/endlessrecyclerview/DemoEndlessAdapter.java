@@ -25,6 +25,10 @@ import java.util.Queue;
  */
 public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHolder> {
 
+  public interface OnFillCompleteListener {
+    void onFillComplete();
+  }
+
   private MockClient mMockClient;
   private List<MediaItem> mMediaItems = new ArrayList<>();
   private Queue<Integer> mNullPositions = new LinkedList<>();
@@ -32,6 +36,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   private LayoutInflater mLayoutInflater;
   private int mLimit = Integer.MAX_VALUE;
   private boolean mIsFetching;
+  private OnFillCompleteListener mOnFillCompleteListener;
 
   public DemoEndlessAdapter(Context context){
     mLayoutInflater = LayoutInflater.from(context);
@@ -74,6 +79,10 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     }
   }
 
+  public void setOnFillCompleteListener(OnFillCompleteListener onFillCompleteListener){
+    mOnFillCompleteListener = onFillCompleteListener;
+  }
+
   @Override
   public int getItemCount() {
     return mMediaItems.size();
@@ -114,12 +123,13 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     Log.d("DEA", "pad: " + quantity);
     for(int i = 0; i < quantity; i++){
       if(mMediaItems.size() < mLimit) {
-        mNullPositions.add(mMediaItems.size());
+        int position = mMediaItems.size();
+        mNullPositions.add(position);
         mMediaItems.add(null);
+        notifyItemInserted(position);
       }
     }
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
-    notifyDataSetChanged();
   }
 
   /**
@@ -140,21 +150,27 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   private MockClient.ResponseReceivedListener mResponseReceivedListener = new MockClient.ResponseReceivedListener() {
     @Override
     public void onResponse(JsonResponse jsonResponse) {
-      Log.d("DEA", "onResponse");
+      Log.d("DEA", "onResponse, results.length=" + jsonResponse.results.size() + ", placeholders.length=" + mNullPositions.size());
       for(MediaItem mediaItem : jsonResponse.results){
-        if(!mNullPositions.isEmpty()){
+        if(mNullPositions.size() > 0){
           int position = mNullPositions.poll();
+          Log.d("DEA", "polling, size should be reduced by 1...  new size=" + mNullPositions.size());
           mMediaItems.set(position, mediaItem);
+          notifyItemChanged(position);
         } else {
           if(mMediaItems.size() < mLimit) {
             mMediaItems.add(mediaItem);
+            notifyItemInserted(mMediaItems.size() - 1);
           }
         }
       }
       Log.d("DEA", "got items, now items owed: " + mNullPositions.size());
-      notifyDataSetChanged();
       mIsFetching = false;
-      if(!mNullPositions.isEmpty()){
+      if(mNullPositions.size() == 0) {
+        if(mOnFillCompleteListener != null){
+          mOnFillCompleteListener.onFillComplete();
+        }
+      } else {
         Log.d("DEA", "still have placeholders to fill, launch more");
         fetch(0);
       }

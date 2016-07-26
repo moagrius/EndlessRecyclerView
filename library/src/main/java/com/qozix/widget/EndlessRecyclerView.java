@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
 
 /**
@@ -36,18 +37,18 @@ public class EndlessRecyclerView extends RecyclerView {
     addOnLayoutChangeListener(mOnLayoutChangedListener);
   }
 
-  public void start(int quantity){
+  public void start(int quantity) {
     getEndlessAdapter().fill(quantity);
   }
 
-  public boolean isEndless(){
+  public boolean isEndless() {
     return mIsEndless;
   }
 
-  private void setIsEndless(boolean isEndless){
-    if(isEndless != mIsEndless){
+  private void setIsEndless(boolean isEndless) {
+    if (isEndless != mIsEndless) {
       mIsEndless = isEndless;
-      if(mIsEndless) {
+      if (mIsEndless) {
         addOnScrollListener(mEndlessListener);
       } else {
         removeOnScrollListener(mEndlessListener);
@@ -63,24 +64,24 @@ public class EndlessRecyclerView extends RecyclerView {
     super.setAdapter(adapter);
   }
 
-  public EndlessAdapter getEndlessAdapter(){
+  public EndlessAdapter getEndlessAdapter() {
     return (EndlessAdapter) getAdapter();
   }
 
-  public int getVerticalThreshold(){
+  public int getVerticalThreshold() {
     return mVerticalThreshold;
   }
 
-  public int getHorizontalThreshold(){
+  public int getHorizontalThreshold() {
     return mHorizontalThreshold;
   }
 
-  public void setVerticalThreshold(int threshold){
+  public void setVerticalThreshold(int threshold) {
     mVerticalThreshold = threshold;
     onEndlessScroll(false, true);
   }
 
-  public void setHorizontalThreshold(int threshold){
+  public void setHorizontalThreshold(int threshold) {
     mHorizontalThreshold = threshold;
     onEndlessScroll(true, false);
   }
@@ -91,114 +92,135 @@ public class EndlessRecyclerView extends RecyclerView {
 
   /**
    * Set this to true to skip recomputation of row heights, if you expect rows to be a consistent height.
+   *
    * @param canExpectConsistentItemSize
    */
   public void setCanExpectConsistentItemSize(boolean canExpectConsistentItemSize) {
     mCanExpectConsistentItemSize = canExpectConsistentItemSize;
   }
 
-  private void computeDistanceFromVerticalEnd(){
+  private void computeDistanceFromVerticalEnd() {
+    Log.d("ERV", "content=" + computeVerticalScrollRange() + ", scrollY=" + computeVerticalScrollOffset());
     mDistanceFromVerticalEnd = computeVerticalScrollRange() - computeVerticalScrollOffset() - getHeight();
   }
 
-  private void computeDistanceFromHorizontalEnd(){
+  private void computeDistanceFromHorizontalEnd() {
     mDistanceFromHorizontalEnd = computeHorizontalScrollRange() - computeHorizontalScrollOffset() - getWidth();
   }
 
-  private void computeAverageRowHeight(){
-    if(getChildCount() == 0){
-      mLastRecordedItemHeight = 0;
-      return;
+  protected int computeAverageRowHeight() {
+    if (getChildCount() == 0) {
+      Log.d("ERV", "no children, returning height");
+      return getHeight();
     }
     int totalHeight = 0;
-    for(int i = 0; i < getChildCount(); i++){
+    for (int i = 0; i < getChildCount(); i++) {
       View child = getChildAt(i);
       totalHeight += child.getHeight();
     }
-    mLastRecordedItemHeight = totalHeight / getChildCount();
+    return totalHeight / getChildCount();
   }
 
-  private void computeAverageColumnWidth(){
-    if(getChildCount() == 0){
-      mLastRecordedItemWidth = 0;
-      return;
+  protected int computeAverageColumnWidth() {
+    if (getChildCount() == 0) {
+      return getWidth();
     }
     int totalWidth = 0;
-    for(int i = 0; i < getChildCount(); i++){
+    for (int i = 0; i < getChildCount(); i++) {
       View child = getChildAt(i);
       totalWidth += child.getWidth();
     }
-    mLastRecordedItemWidth = totalWidth / getChildCount();
+    return totalWidth / getChildCount();
   }
 
-  private int getAverageRowHeight(){
-    if(!mCanExpectConsistentItemSize || mLastRecordedItemHeight == 0) {
-      computeAverageRowHeight();
+  protected int getAverageRowHeight() {
+    if (!mCanExpectConsistentItemSize || mLastRecordedItemHeight == 0) {
+      mLastRecordedItemHeight = computeAverageRowHeight();
     }
     return mLastRecordedItemHeight;
   }
 
-  private int getAverageColumnWidth(){
-    if(!mCanExpectConsistentItemSize || mLastRecordedItemWidth == 0) {
-      computeAverageColumnWidth();
+  protected int getAverageColumnWidth() {
+    if (!mCanExpectConsistentItemSize || mLastRecordedItemWidth == 0) {
+      mLastRecordedItemWidth = computeAverageColumnWidth();
     }
     return mLastRecordedItemWidth;
   }
 
-  private boolean isPastVerticalThreshold(){
+  private boolean isPastVerticalThreshold() {
     return mDistanceFromVerticalEnd < mVerticalThreshold;
   }
 
-  private boolean isPastHorizontalThreshold(){
+  private boolean isPastHorizontalThreshold() {
     return mDistanceFromHorizontalEnd < mHorizontalThreshold;
   }
 
-  private void onVerticalThresholdReached(){
-    if(getAdapter() == null){
+  private void onVerticalThresholdReached() {
+    if (getAdapter() == null) {
       return;
     }
     int averageRowHeight = getAverageRowHeight();
-    if(averageRowHeight > 0){
-      int quantity = 1 + mDistanceFromVerticalEnd / averageRowHeight;
+    Log.d("ERV", "avg height=" + averageRowHeight + ", distance=" + mDistanceFromVerticalEnd);
+    if (averageRowHeight > 0) {
+      int quantity = 1 + (mDistanceFromVerticalEnd / averageRowHeight);
+      Log.d("ERV", "quantity=" + quantity);
       getEndlessAdapter().fill(quantity);
     }
   }
 
-  private void onHorizontalThresholdReached(){
-    if(getAdapter() == null){
+  private void onHorizontalThresholdReached() {
+    if (getAdapter() == null) {
       return;
     }
     int averageColumnWidth = getAverageColumnWidth();
-    if(averageColumnWidth > 0){
-      int quantity = 1 + mDistanceFromHorizontalEnd / averageColumnWidth;
+    if (averageColumnWidth > 0) {
+      int quantity = 1 + Math.max(1, mDistanceFromHorizontalEnd / averageColumnWidth);
       getEndlessAdapter().fill(quantity);
     }
+  }
+
+  private boolean layoutManagerCanScrollVertically() {
+    return getLayoutManager() != null && getLayoutManager().canScrollVertically();
+  }
+
+  private boolean layoutManagerCanScrollHorizontally() {
+    return getLayoutManager() != null && getLayoutManager().canScrollHorizontally();
   }
 
   // TODO: can scroll horizontally
 
-  /* package-private */ void onEndlessScroll(boolean isScrollingHorizontally, boolean isScrollingVertically){
-    if(isScrollingVertically) {
+  /* package-private */ void onEndlessScroll(boolean isScrollingHorizontally, boolean isScrollingVertically) {
+    if (isScrollingVertically && layoutManagerCanScrollVertically()) {
       computeDistanceFromVerticalEnd();
       if (isPastVerticalThreshold()) {
         onVerticalThresholdReached();
       }
     }
-    if(isScrollingHorizontally){
+    if (isScrollingHorizontally && layoutManagerCanScrollHorizontally()) {
       computeDistanceFromHorizontalEnd();
-      if(isPastHorizontalThreshold()){
+      if (isPastHorizontalThreshold()) {
         onHorizontalThresholdReached();
       }
     }
   }
 
-  public void trigger(){
-    onEndlessScroll(mHorizontalThreshold > 0, mVerticalThreshold > 0);
+  public void trigger() {
+    onEndlessScroll(true, true);
   }
 
-  private View.OnLayoutChangeListener mOnLayoutChangedListener = new View.OnLayoutChangeListener(){
+  private void recomputeTerminalDistances() {
+    if (layoutManagerCanScrollVertically()) {
+      computeDistanceFromVerticalEnd();
+    }
+    if (layoutManagerCanScrollHorizontally()) {
+      computeDistanceFromHorizontalEnd();
+    }
+  }
+
+  private View.OnLayoutChangeListener mOnLayoutChangedListener = new View.OnLayoutChangeListener() {
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
+      recomputeTerminalDistances();
       trigger();
     }
   };

@@ -2,7 +2,7 @@ package com.qozix.endlessrecyclerview;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 
@@ -20,14 +20,15 @@ public class MainActivity extends AppCompatActivity {
 
     final DemoEndlessAdapter demoEndlessAdapter = new DemoEndlessAdapter(this);
     demoEndlessAdapter.setOnItemClickListener(mOnItemClickListener);
+    demoEndlessAdapter.setOnFillCompleteListener(mOnFillCompleteListener);
     demoEndlessAdapter.setLimit(1000);
 
     mEndlessRecyclerView = (EndlessRecyclerView) findViewById(R.id.endlessrecyclerview_main);
     mEndlessRecyclerView.setCanExpectConsistentItemSize(true);
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
-    mEndlessRecyclerView.setLayoutManager(new GridLayoutManager(this, 25));
+    mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
-    mEndlessRecyclerView.start(30);
+    //mEndlessRecyclerView.start(30);
 
   }
 
@@ -46,6 +47,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
       updateEndlessRecyclerViewThreshold();
+    }
+  };
+
+  private DemoEndlessAdapter.OnFillCompleteListener mOnFillCompleteListener = new DemoEndlessAdapter.OnFillCompleteListener() {
+    @Override
+    public void onFillComplete() {
+      mEndlessRecyclerView.trigger();
     }
   };
 
