@@ -2,7 +2,7 @@ package com.qozix.endlessrecyclerview;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.util.Log;
 import android.view.View;
 
@@ -25,15 +25,14 @@ public class MainActivity extends AppCompatActivity {
     mEndlessRecyclerView = (EndlessRecyclerView) findViewById(R.id.endlessrecyclerview_main);
     mEndlessRecyclerView.setCanExpectConsistentItemSize(true);
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
-    mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+    mEndlessRecyclerView.setLayoutManager(new GridLayoutManager(this, 25));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
     mEndlessRecyclerView.start(30);
-    updateEndlessRecyclerViewThreshold();
 
   }
 
   private void updateEndlessRecyclerViewThreshold(){
-    mEndlessRecyclerView.setVerticalThreshold(mEndlessRecyclerView.getHeight() * 2);
+    mEndlessRecyclerView.setVerticalThreshold(mEndlessRecyclerView.getHeight() * 3);
   }
 
   private View.OnClickListener mOnItemClickListener = new View.OnClickListener() {

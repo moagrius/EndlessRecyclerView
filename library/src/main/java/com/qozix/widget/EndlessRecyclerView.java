@@ -175,6 +175,8 @@ public class EndlessRecyclerView extends RecyclerView {
     }
   }
 
+  // TODO: can scroll horizontally
+
   /* package-private */ void onEndlessScroll(boolean isScrollingHorizontally, boolean isScrollingVertically){
     if(isScrollingVertically) {
       computeDistanceFromVerticalEnd();
