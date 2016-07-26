@@ -79,6 +79,7 @@ public class MockClient {
         mHandler.post(new Runnable() {
           @Override
           public void run() {
+            Log.d("MC", "responseReceivedListener is on main thread? " + (Looper.getMainLooper().getThread() == Thread.currentThread()));
             responseReceivedListener.onResponse(jsonResponse);
           }
         });

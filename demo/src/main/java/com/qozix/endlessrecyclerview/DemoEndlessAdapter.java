@@ -1,6 +1,7 @@
 package com.qozix.endlessrecyclerview;
 
 import android.content.Context;
+import android.os.Looper;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
@@ -41,6 +42,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   public DemoEndlessAdapter(Context context){
     mLayoutInflater = LayoutInflater.from(context);
     mMockClient = new MockClient(context);
+    registerAdapterDataObserver(mAdapterDataObserver);
   }
 
   @Override
@@ -164,6 +166,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
           }
         }
       }
+      Log.d("DEA", "notify on main thread? " + (Looper.getMainLooper().getThread() == Thread.currentThread()));
       Log.d("DEA", "got items, now items owed: " + mNullPositions.size());
       mIsFetching = false;
       if(mNullPositions.size() == 0) {
@@ -174,6 +177,44 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         Log.d("DEA", "still have placeholders to fill, launch more");
         fetch(0);
       }
+    }
+  };
+
+  private RecyclerView.AdapterDataObserver mAdapterDataObserver = new RecyclerView.AdapterDataObserver() {
+    @Override
+    public void onChanged() {
+      Log.d("ADO", "onChanged");
+      super.onChanged();
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount) {
+      Log.d("ADO", "onItemRangeChanged");
+      super.onItemRangeChanged(positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+      Log.d("ADO", "onItemRangeChanged");
+      super.onItemRangeChanged(positionStart, itemCount, payload);
+    }
+
+    @Override
+    public void onItemRangeInserted(int positionStart, int itemCount) {
+      Log.d("ADO", "onItemRangeInserted");
+      super.onItemRangeInserted(positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+      Log.d("ADO", "onItemRangeMoved");
+      super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+    }
+
+    @Override
+    public void onItemRangeRemoved(int positionStart, int itemCount) {
+      Log.d("ADO", "onItemRangeRemoved");
+      super.onItemRangeRemoved(positionStart, itemCount);
     }
   };
 

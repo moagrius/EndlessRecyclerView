@@ -1,6 +1,7 @@
 package com.qozix.endlessrecyclerview;
 
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
@@ -53,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
   private DemoEndlessAdapter.OnFillCompleteListener mOnFillCompleteListener = new DemoEndlessAdapter.OnFillCompleteListener() {
     @Override
     public void onFillComplete() {
-      mEndlessRecyclerView.trigger();
+      mEndlessRecyclerView.rebuild();
+      Log.d("MA", "onFillComplete on main thread? " + (Looper.getMainLooper().getThread() == Thread.currentThread()));
     }
   };
 
