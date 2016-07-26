@@ -4,7 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
-import android.view.MotionEvent;
+import android.util.TypedValue;
 import android.view.View;
 
 import com.qozix.widget.EndlessRecyclerView;
@@ -29,9 +29,10 @@ public class MainActivity extends AppCompatActivity {
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
     mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
+    mEndlessRecyclerView.setEstimatedItemHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics()));
     //mEndlessRecyclerView.start(30);
 
-
+/*
     mEndlessRecyclerView.setOnTouchListener(new View.OnTouchListener() {
       @Override
       public boolean onTouch(View v, MotionEvent event) {
@@ -41,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
         return false;
       }
     });
-
+*/
   }
 
   private void updateEndlessRecyclerViewThreshold(){

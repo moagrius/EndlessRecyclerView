@@ -41,7 +41,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   public DemoEndlessAdapter(Context context){
     mLayoutInflater = LayoutInflater.from(context);
     mMockClient = new MockClient(context);
-    registerAdapterDataObserver(mAdapterDataObserver);
+    //registerAdapterDataObserver(mAdapterDataObserver);
   }
 
   @Override
@@ -122,21 +122,20 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   @Override
   public void fill(int quantity){
     super.fill(quantity);
-    Log.d("DEA", "fill(" + quantity + ")");
+    Log.d("DEA", "fill(" + quantity + "), total=" + mMediaItems.size());
   }
 
   @Override
   public void pad(int quantity) {
     Log.d("DEA", "pad: " + quantity);
+    int start = mMediaItems.size();
     for(int i = 0; i < quantity; i++){
       if(mMediaItems.size() < mLimit) {
         int position = mMediaItems.size();
         mNullPositions.add(position);
         mMediaItems.add(null);
-        //notifyItemInserted(position);
       }
     }
-    notifyDataSetChanged();
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
   }
 
@@ -163,20 +162,18 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
       for(MediaItem mediaItem : jsonResponse.results){
         if(mNullPositions.size() > 0){
           int position = mNullPositions.poll();
-          Log.d("DEA", "polling, size should be reduced by 1...  new size=" + mNullPositions.size());
           mMediaItems.set(position, mediaItem);
           notifyItemChanged(position);
         } else {
           if(mMediaItems.size() < mLimit) {
             mMediaItems.add(mediaItem);
             notifyItemInserted(mMediaItems.size() - 1);
-            notifyItemInserted(mMediaItems.size());
           }
         }
       }
       Log.d("DEA", "got items, now items owed: " + mNullPositions.size());
-      Log.d("DEA", "notifyDataSetChanged, was " + startSize + ", now is " + mMediaItems.size());
-      notifyDataSetChanged();
+      Log.d("DEA", "was " + startSize + ", now is " + mMediaItems.size());
+      //notifyDataSetChanged();
       mIsFetching = false;
       if(mNullPositions.size() == 0) {
         if(mOnFillCompleteListener != null){
