@@ -41,6 +41,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   public DemoEndlessAdapter(Context context){
     mLayoutInflater = LayoutInflater.from(context);
     mMockClient = new MockClient(context);
+    registerAdapterDataObserver(mAdapterDataObserver);
   }
 
   @Override
@@ -119,6 +120,12 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   }
 
   @Override
+  public void fill(int quantity){
+    super.fill(quantity);
+    Log.d("DEA", "fill(" + quantity + ")");
+  }
+
+  @Override
   public void pad(int quantity) {
     Log.d("DEA", "pad: " + quantity);
     for(int i = 0; i < quantity; i++){
@@ -126,9 +133,10 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         int position = mMediaItems.size();
         mNullPositions.add(position);
         mMediaItems.add(null);
-        notifyItemInserted(position);
+        //notifyItemInserted(position);
       }
     }
+    notifyDataSetChanged();
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
   }
 
@@ -150,7 +158,8 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   private MockClient.ResponseReceivedListener mResponseReceivedListener = new MockClient.ResponseReceivedListener() {
     @Override
     public void onResponse(JsonResponse jsonResponse) {
-      Log.d("DEA", "onResponse, results.length=" + jsonResponse.results.size() + ", placeholders.length=" + mNullPositions.size());
+      int startSize = mMediaItems.size();
+      Log.d("DEA", "onResponse, results.length=" + jsonResponse.results.size() + ", placeholders.length=" + mNullPositions.size() + ", items.length=" + mMediaItems.size());
       for(MediaItem mediaItem : jsonResponse.results){
         if(mNullPositions.size() > 0){
           int position = mNullPositions.poll();
@@ -161,19 +170,61 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
           if(mMediaItems.size() < mLimit) {
             mMediaItems.add(mediaItem);
             notifyItemInserted(mMediaItems.size() - 1);
+            notifyItemInserted(mMediaItems.size());
           }
         }
       }
       Log.d("DEA", "got items, now items owed: " + mNullPositions.size());
+      Log.d("DEA", "notifyDataSetChanged, was " + startSize + ", now is " + mMediaItems.size());
+      notifyDataSetChanged();
       mIsFetching = false;
       if(mNullPositions.size() == 0) {
         if(mOnFillCompleteListener != null){
-          mOnFillCompleteListener.onFillComplete();
+          //mOnFillCompleteListener.onFillComplete();
         }
       } else {
         Log.d("DEA", "still have placeholders to fill, launch more");
         fetch(0);
       }
+    }
+  };
+
+
+  private RecyclerView.AdapterDataObserver mAdapterDataObserver = new RecyclerView.AdapterDataObserver() {
+    @Override
+    public void onChanged() {
+      Log.d("ADO", "onChanged");
+      super.onChanged();
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount) {
+      Log.d("ADO", "onItemRangeChanged");
+      super.onItemRangeChanged(positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
+      Log.d("ADO", "onItemRangeChanged");
+      super.onItemRangeChanged(positionStart, itemCount, payload);
+    }
+
+    @Override
+    public void onItemRangeInserted(int positionStart, int itemCount) {
+      Log.d("ADO", "onItemRangeInserted");
+      super.onItemRangeInserted(positionStart, itemCount);
+    }
+
+    @Override
+    public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
+      Log.d("ADO", "onItemRangeMoved");
+      super.onItemRangeMoved(fromPosition, toPosition, itemCount);
+    }
+
+    @Override
+    public void onItemRangeRemoved(int positionStart, int itemCount) {
+      Log.d("ADO", "onItemRangeRemoved");
+      super.onItemRangeRemoved(positionStart, itemCount);
     }
   };
 

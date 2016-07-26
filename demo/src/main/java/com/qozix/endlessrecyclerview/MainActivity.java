@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.qozix.widget.EndlessRecyclerView;
@@ -30,6 +31,17 @@ public class MainActivity extends AppCompatActivity {
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
     //mEndlessRecyclerView.start(30);
 
+
+    mEndlessRecyclerView.setOnTouchListener(new View.OnTouchListener() {
+      @Override
+      public boolean onTouch(View v, MotionEvent event) {
+        Log.d("MA", "onTouch");
+        mEndlessRecyclerView.invalidate();
+        mEndlessRecyclerView.postInvalidate();
+        return false;
+      }
+    });
+
   }
 
   private void updateEndlessRecyclerViewThreshold(){
@@ -53,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
   private DemoEndlessAdapter.OnFillCompleteListener mOnFillCompleteListener = new DemoEndlessAdapter.OnFillCompleteListener() {
     @Override
     public void onFillComplete() {
+      Log.d("MA", "onFillComplete...");
       mEndlessRecyclerView.trigger();
     }
   };
