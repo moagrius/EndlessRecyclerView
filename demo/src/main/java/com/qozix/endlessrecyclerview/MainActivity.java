@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 
 import com.qozix.widget.EndlessRecyclerView;
@@ -21,7 +20,6 @@ public class MainActivity extends AppCompatActivity {
 
     final DemoEndlessAdapter demoEndlessAdapter = new DemoEndlessAdapter(this);
     demoEndlessAdapter.setOnItemClickListener(mOnItemClickListener);
-    demoEndlessAdapter.setOnFillCompleteListener(mOnFillCompleteListener);
     demoEndlessAdapter.setLimit(1000);
 
     mEndlessRecyclerView = (EndlessRecyclerView) findViewById(R.id.endlessrecyclerview_main);
@@ -29,20 +27,7 @@ public class MainActivity extends AppCompatActivity {
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
     mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
-    mEndlessRecyclerView.setEstimatedItemHeight((int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 100, getResources().getDisplayMetrics()));
-    //mEndlessRecyclerView.start(30);
 
-/*
-    mEndlessRecyclerView.setOnTouchListener(new View.OnTouchListener() {
-      @Override
-      public boolean onTouch(View v, MotionEvent event) {
-        Log.d("MA", "onTouch");
-        mEndlessRecyclerView.invalidate();
-        mEndlessRecyclerView.postInvalidate();
-        return false;
-      }
-    });
-*/
   }
 
   private void updateEndlessRecyclerViewThreshold(){
@@ -60,14 +45,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onLayoutChange(View v, int left, int top, int right, int bottom, int oldLeft, int oldTop, int oldRight, int oldBottom) {
       updateEndlessRecyclerViewThreshold();
-    }
-  };
-
-  private DemoEndlessAdapter.OnFillCompleteListener mOnFillCompleteListener = new DemoEndlessAdapter.OnFillCompleteListener() {
-    @Override
-    public void onFillComplete() {
-      Log.d("MA", "onFillComplete...");
-      mEndlessRecyclerView.trigger();
     }
   };
 

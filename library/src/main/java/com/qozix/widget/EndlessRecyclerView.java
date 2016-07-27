@@ -1,11 +1,15 @@
 package com.qozix.widget;
 
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 /**
  * Created by michaeldunn on 7/20/16.
@@ -21,6 +25,8 @@ public class EndlessRecyclerView extends RecyclerView {
   private int mLastRecordedItemWidth;
   private int mEstimatedItemHeight;
   private int mEstimatedItemWidth;
+  private int mEstimatedItemHeightFromAdapter;
+  private int mEstimatedItemWidthFromAdapter;
 
   public EndlessRecyclerView(Context context) {
     this(context, null);
@@ -86,11 +92,51 @@ public class EndlessRecyclerView extends RecyclerView {
     return mCanExpectConsistentItemSize;
   }
 
+  protected int getEstimatedItemHeightFromAdapter() {
+    if(mEstimatedItemHeightFromAdapter == 0){
+      mEstimatedItemHeightFromAdapter = computeItemHeightFromAdapter();
+    }
+    return mEstimatedItemHeightFromAdapter;
+  }
+
+  protected int computeItemHeightFromAdapter(){
+    if(getAdapter() != null){
+      ViewGroup dummy = new FrameLayout(getContext());
+      ViewHolder viewHolder = getAdapter().onCreateViewHolder(dummy, 0);
+      View yardstick = viewHolder.itemView;
+      int widthMeasureSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.AT_MOST);
+      int heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
+      yardstick.measure(widthMeasureSpec, heightMeasureSpec);
+      int measuredHeight =  yardstick.getMeasuredHeight();
+      if(measuredHeight > 0){
+        return measuredHeight;
+      }
+    }
+    return 0;
+  }
+
+  private int getDefaultTextSize() {
+    TypedValue typedValue = new TypedValue();
+    getContext().getTheme().resolveAttribute(android.R.attr.textAppearance, typedValue, true);
+    int[] textSizeAttr = new int[] { android.R.attr.textSize };
+    TypedArray typedArray = getContext().obtainStyledAttributes(typedValue.data, textSizeAttr);
+    int textSize = typedArray.getDimensionPixelSize(0, -1);
+    typedArray.recycle();
+    return textSize;
+  }
+
   public int getEstimatedItemHeight() {
     if(mEstimatedItemHeight > 0){
       return mEstimatedItemHeight;
     }
     return getHeight();
+    /*
+    int estimatedItemHeightFromAdapter = getEstimatedItemHeightFromAdapter();
+    if(estimatedItemHeightFromAdapter > 0){
+      return estimatedItemHeightFromAdapter;
+    }
+    return getDefaultTextSize();
+    */
   }
 
   public void setEstimatedItemHeight(int estimatedItemHeight) {
@@ -252,7 +298,6 @@ public class EndlessRecyclerView extends RecyclerView {
     if(changed){
       recomputeItemHeights();  // probably not needed
       populate();
-      Log.d("ERV", "onLayoutChange, height=" + getHeight() + ", itemHeight=" + getAverageOrEstimatedItemHeight());
     }
   }
 
@@ -263,6 +308,5 @@ public class EndlessRecyclerView extends RecyclerView {
       recomputeItemHeights();  // probably not needed
     }
   };
-
 
 }
