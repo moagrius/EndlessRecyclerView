@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
   }
 
-  private void updateEndlessRecyclerViewThreshold(){
+  private void updateEndlessRecyclerViewThreshold() {
     mEndlessRecyclerView.setVerticalThreshold(mEndlessRecyclerView.getHeight() * 3);
   }
 

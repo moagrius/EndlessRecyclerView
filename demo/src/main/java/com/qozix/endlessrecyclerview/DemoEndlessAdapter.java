@@ -37,7 +37,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   private boolean mIsFetching;
   private OnFillCompleteListener mOnFillCompleteListener;
 
-  public DemoEndlessAdapter(Context context){
+  public DemoEndlessAdapter(Context context) {
     mLayoutInflater = LayoutInflater.from(context);
     mMockClient = new MockClient(context);
   }
@@ -51,7 +51,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   @Override
   public void onBindViewHolder(ItemHolder holder, int position) {
     MediaItem mediaItem = mMediaItems.get(position);
-    if(mediaItem == null) {
+    if (mediaItem == null) {
       holder.mReadyContainer.setOnClickListener(null);
       holder.mWaitingContainer.setVisibility(View.VISIBLE);
       holder.mReadyContainer.setVisibility(View.GONE);
@@ -78,7 +78,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     }
   }
 
-  public void setOnFillCompleteListener(OnFillCompleteListener onFillCompleteListener){
+  public void setOnFillCompleteListener(OnFillCompleteListener onFillCompleteListener) {
     mOnFillCompleteListener = onFillCompleteListener;
   }
 
@@ -87,11 +87,11 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     return mMediaItems.size();
   }
 
-  public void setOnItemClickListener(View.OnClickListener listener){
+  public void setOnItemClickListener(View.OnClickListener listener) {
     mOnClickListener = listener;
   }
 
-  public List<MediaItem> getMediaItems(){
+  public List<MediaItem> getMediaItems() {
     return mMediaItems;
   }
 
@@ -102,6 +102,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     private TextView mMediaTextView;
     private TextView mTitleTextView;
     private TextView mAuthorsTextView;
+
     public ItemHolder(View itemView) {
       super(itemView);
       mReadyContainer = (ViewGroup) itemView.findViewById(R.id.endless_row_ready);
@@ -113,14 +114,14 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     }
   }
 
-  private boolean canUseMoreDataFromServer(){
+  private boolean canUseMoreDataFromServer() {
     return mMediaItems.size() < mLimit || !mNullPositions.isEmpty();
   }
 
   @Override
   public void pad(int quantity) {
-    for(int i = 0; i < quantity; i++){
-      if(mMediaItems.size() < mLimit) {
+    for (int i = 0; i < quantity; i++) {
+      if (mMediaItems.size() < mLimit) {
         int position = mMediaItems.size();
         mNullPositions.add(position);
         mMediaItems.add(null);
@@ -137,7 +138,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
    */
   @Override
   public void fetch(int quantity) {
-    if(!mIsFetching && canUseMoreDataFromServer()) {
+    if (!mIsFetching && canUseMoreDataFromServer()) {
       mIsFetching = true;
       mMockClient.fetch(mResponseReceivedListener);
     }
@@ -146,13 +147,13 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   private MockClient.ResponseReceivedListener mResponseReceivedListener = new MockClient.ResponseReceivedListener() {
     @Override
     public void onResponse(JsonResponse jsonResponse) {
-      for(MediaItem mediaItem : jsonResponse.results){
-        if(mNullPositions.size() > 0){
+      for (MediaItem mediaItem : jsonResponse.results) {
+        if (mNullPositions.size() > 0) {
           int position = mNullPositions.poll();
           mMediaItems.set(position, mediaItem);
           notifyItemChanged(position);
         } else {
-          if(mMediaItems.size() < mLimit) {
+          if (mMediaItems.size() < mLimit) {
             int position = mMediaItems.size();
             mMediaItems.add(mediaItem);
             notifyItemInserted(position);
@@ -165,10 +166,10 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
       // the granular notification methods commented out in this method will fail to requestLayout
       // dispatch it here manually
       boolean expectAnotherFetch = mNullPositions.size() > 0;
-      if(mOnFillCompleteListener != null){
-         mOnFillCompleteListener.onFillComplete(expectAnotherFetch);
+      if (mOnFillCompleteListener != null) {
+        mOnFillCompleteListener.onFillComplete(expectAnotherFetch);
       }
-     if(expectAnotherFetch){  // TODO: probably should not have this here
+      if (expectAnotherFetch) {  // TODO: probably should not have this here
         fetch(mNullPositions.size());
       }
     }

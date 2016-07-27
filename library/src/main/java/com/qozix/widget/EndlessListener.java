@@ -9,7 +9,7 @@ public class EndlessListener extends RecyclerView.OnScrollListener {
 
   private EndlessRecyclerView mEndlessRecyclerView;
 
-  public EndlessListener(EndlessRecyclerView endlessRecyclerView){
+  public EndlessListener(EndlessRecyclerView endlessRecyclerView) {
     mEndlessRecyclerView = endlessRecyclerView;
   }
 

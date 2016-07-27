@@ -23,19 +23,19 @@ public class MockClient {
   private Context mContext;
   private int mPage;
 
-  public MockClient(Context context){
+  public MockClient(Context context) {
     mContext = context;
     mHandler = new Handler(Looper.getMainLooper());
   }
 
-  private String readAssetFile(String fileName){
+  private String readAssetFile(String fileName) {
     try {
       InputStream inputStream = mContext.getAssets().open(fileName);
       InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
       BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
       StringBuilder stringBuilder = new StringBuilder();
       String line = bufferedReader.readLine();
-      while(line != null){
+      while (line != null) {
         stringBuilder.append(line);
         line = bufferedReader.readLine();
       }
@@ -46,24 +46,24 @@ public class MockClient {
     return null;
   }
 
-  private void increment(){
+  private void increment() {
     mPage++;
-    if(mPage > 10){
+    if (mPage > 10) {
       mPage = 1;
     }
   }
 
-  private String getMockUri(){
+  private String getMockUri() {
     return "json/mock-search-" + mPage + ".json";
   }
 
-  private String getNextResult(){
+  private String getNextResult() {
     return readAssetFile(getMockUri());
   }
 
-  public void fetch(final ResponseReceivedListener responseReceivedListener){
+  public void fetch(final ResponseReceivedListener responseReceivedListener) {
     increment();
-    new Thread(new Runnable(){
+    new Thread(new Runnable() {
       @Override
       public void run() {
         int delay = 500 + mRandom.nextInt(700);
