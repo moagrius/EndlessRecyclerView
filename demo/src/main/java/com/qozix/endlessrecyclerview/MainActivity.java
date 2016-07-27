@@ -24,7 +24,6 @@ public class MainActivity extends AppCompatActivity {
     demoEndlessAdapter.setOnFillCompleteListener(new DemoEndlessAdapter.OnFillCompleteListener() {
       @Override
       public void onFillComplete(boolean expectsMore) {
-        Log.d("MA", "onFillComplete, expects more? " + expectsMore);
         mEndlessRecyclerView.requestLayout();
       }
     });

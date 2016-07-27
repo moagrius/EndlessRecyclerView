@@ -3,7 +3,6 @@ package com.qozix.endlessrecyclerview;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -120,7 +119,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
 
   @Override
   public void pad(int quantity) {
-    Log.d("DEA", "pad: " + quantity);
     for(int i = 0; i < quantity; i++){
       if(mMediaItems.size() < mLimit) {
         int position = mMediaItems.size();
@@ -129,7 +127,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         notifyItemInserted(position);
       }
     }
-    Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
   }
 
   /**
@@ -141,7 +138,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   @Override
   public void fetch(int quantity) {
     if(!mIsFetching && canUseMoreDataFromServer()) {
-      Log.d("DEA", "fetch");
       mIsFetching = true;
       mMockClient.fetch(mResponseReceivedListener);
     }
@@ -150,7 +146,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   private MockClient.ResponseReceivedListener mResponseReceivedListener = new MockClient.ResponseReceivedListener() {
     @Override
     public void onResponse(JsonResponse jsonResponse) {
-      Log.d("DEA", "onResponse, results.length=" + jsonResponse.results.size() + ", placeholders.length=" + mNullPositions.size() + ", items.length=" + mMediaItems.size());
       for(MediaItem mediaItem : jsonResponse.results){
         if(mNullPositions.size() > 0){
           int position = mNullPositions.poll();
@@ -173,49 +168,9 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
       if(mOnFillCompleteListener != null){
          mOnFillCompleteListener.onFillComplete(expectAnotherFetch);
       }
-     if(expectAnotherFetch){
-        Log.d("DEA", "still have placeholders to fill, launch more");
+     if(expectAnotherFetch){  // TODO: probably should not have this here
         fetch(mNullPositions.size());
       }
-    }
-  };
-
-
-  private RecyclerView.AdapterDataObserver mAdapterDataObserver = new RecyclerView.AdapterDataObserver() {
-    @Override
-    public void onChanged() {
-      Log.d("ADO", "onChanged");
-      super.onChanged();
-    }
-
-    @Override
-    public void onItemRangeChanged(int positionStart, int itemCount) {
-      Log.d("ADO", "onItemRangeChanged");
-      super.onItemRangeChanged(positionStart, itemCount);
-    }
-
-    @Override
-    public void onItemRangeChanged(int positionStart, int itemCount, Object payload) {
-      Log.d("ADO", "onItemRangeChanged, position=" + positionStart + ", itemCount=" + itemCount);
-      super.onItemRangeChanged(positionStart, itemCount, payload);
-    }
-
-    @Override
-    public void onItemRangeInserted(int positionStart, int itemCount) {
-      Log.d("ADO", "onItemRangeInserted, position=" + positionStart + ", itemCount=" + itemCount);
-      super.onItemRangeInserted(positionStart, itemCount);
-    }
-
-    @Override
-    public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-      Log.d("ADO", "onItemRangeMoved");
-      super.onItemRangeMoved(fromPosition, toPosition, itemCount);
-    }
-
-    @Override
-    public void onItemRangeRemoved(int positionStart, int itemCount) {
-      Log.d("ADO", "onItemRangeRemoved");
-      super.onItemRangeRemoved(positionStart, itemCount);
     }
   };
 

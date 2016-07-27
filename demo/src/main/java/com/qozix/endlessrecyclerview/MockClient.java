@@ -3,7 +3,6 @@ package com.qozix.endlessrecyclerview;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 
 import com.google.gson.Gson;
 import com.qozix.endlessrecyclerview.models.JsonResponse;
@@ -68,7 +67,6 @@ public class MockClient {
       @Override
       public void run() {
         int delay = 500 + mRandom.nextInt(700);
-        Log.d(MockClient.class.getSimpleName(), "latency=" + delay);
         try {
           Thread.sleep(delay);
         } catch (InterruptedException e) {
