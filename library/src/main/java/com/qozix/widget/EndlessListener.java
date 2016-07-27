@@ -9,6 +9,11 @@ public class EndlessListener extends RecyclerView.OnScrollListener {
 
   private EndlessRecyclerView mEndlessRecyclerView;
 
+  /**
+   * Instantiates a new Endless listener.
+   *
+   * @param endlessRecyclerView the endless recycler view
+   */
   public EndlessListener(EndlessRecyclerView endlessRecyclerView) {
     mEndlessRecyclerView = endlessRecyclerView;
   }
