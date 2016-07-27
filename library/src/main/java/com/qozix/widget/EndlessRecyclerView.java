@@ -1,12 +1,10 @@
 package com.qozix.widget;
 
 import android.content.Context;
-import android.content.res.TypedArray;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -25,6 +23,7 @@ public class EndlessRecyclerView extends RecyclerView {
   private int mLastRecordedItemWidth;
   private int mEstimatedItemHeight;
   private int mEstimatedItemWidth;
+  private boolean mShouldEstimateHeightUsingAdapter = true;
   private int mEstimatedItemHeightFromAdapter;
   private int mEstimatedItemWidthFromAdapter;
 
@@ -92,8 +91,16 @@ public class EndlessRecyclerView extends RecyclerView {
     return mCanExpectConsistentItemSize;
   }
 
+  public boolean isShouldEstimateHeightUsingAdapter() {
+    return mShouldEstimateHeightUsingAdapter;
+  }
+
+  public void setShouldEstimateHeightUsingAdapter(boolean shouldEstimateHeightUsingAdapter) {
+    mShouldEstimateHeightUsingAdapter = shouldEstimateHeightUsingAdapter;
+  }
+
   protected int getEstimatedItemHeightFromAdapter() {
-    if(mEstimatedItemHeightFromAdapter == 0){
+    if(mShouldEstimateHeightUsingAdapter && mEstimatedItemHeightFromAdapter == 0){
       mEstimatedItemHeightFromAdapter = computeItemHeightFromAdapter();
     }
     return mEstimatedItemHeightFromAdapter;
@@ -115,28 +122,16 @@ public class EndlessRecyclerView extends RecyclerView {
     return 0;
   }
 
-  private int getDefaultTextSize() {
-    TypedValue typedValue = new TypedValue();
-    getContext().getTheme().resolveAttribute(android.R.attr.textAppearance, typedValue, true);
-    int[] textSizeAttr = new int[] { android.R.attr.textSize };
-    TypedArray typedArray = getContext().obtainStyledAttributes(typedValue.data, textSizeAttr);
-    int textSize = typedArray.getDimensionPixelSize(0, -1);
-    typedArray.recycle();
-    return textSize;
-  }
-
   public int getEstimatedItemHeight() {
     if(mEstimatedItemHeight > 0){
       return mEstimatedItemHeight;
     }
-    return getHeight();
-    /*
+
     int estimatedItemHeightFromAdapter = getEstimatedItemHeightFromAdapter();
     if(estimatedItemHeightFromAdapter > 0){
       return estimatedItemHeightFromAdapter;
     }
-    return getDefaultTextSize();
-    */
+    return getHeight();
   }
 
   public void setEstimatedItemHeight(int estimatedItemHeight) {

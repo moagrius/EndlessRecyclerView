@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
     mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
+    mEndlessRecyclerView.setEstimatedItemHeight(350);
 
   }
 

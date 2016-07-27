@@ -133,9 +133,10 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         int position = mMediaItems.size();
         mNullPositions.add(position);
         mMediaItems.add(null);
-        notifyItemInserted(position);
+        //notifyItemInserted(position);
       }
     }
+    notifyDataSetChanged();
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
   }
 
@@ -162,14 +163,19 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         if(mNullPositions.size() > 0){
           int position = mNullPositions.poll();
           mMediaItems.set(position, mediaItem);
-          notifyItemChanged(position);
+          //notifyItemChanged(position);
         } else {
           if(mMediaItems.size() < mLimit) {
             mMediaItems.add(mediaItem);
-            notifyItemInserted(mMediaItems.size() - 1);
+            //notifyItemInserted(mMediaItems.size() - 1);
           }
         }
       }
+      // strangely, if the initial estimated item height is get height
+      // by not providing an estimate, and explicitly disallowing computation from the adapter
+      // the granular notification methods commented out in this method seem to fail
+      // (spinners are not replaced,
+      notifyDataSetChanged();
       mIsFetching = false;
       if(mNullPositions.size() == 0) {
         if(mOnFillCompleteListener != null){
@@ -177,7 +183,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         }
       } else {
         Log.d("DEA", "still have placeholders to fill, launch more");
-        fetch(0);
+        fetch(mNullPositions.size());
       }
     }
   };
