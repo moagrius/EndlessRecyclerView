@@ -61,7 +61,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
       holder.mReadyContainer.setOnClickListener(mOnClickListener);
       holder.mWaitingContainer.setVisibility(View.GONE);
       holder.mReadyContainer.setVisibility(View.VISIBLE);
-      holder.mTitleTextView.setText(mediaItem.title);
+      holder.mTitleTextView.setText(position + ", " + mediaItem.title);
       boolean isAudioOrVideo = "video".equals(mediaItem.format);
       holder.mMediaTextView.setVisibility(isAudioOrVideo ? View.VISIBLE : View.GONE);
       Picasso.with(holder.itemView.getContext()).load(mediaItem.cover_url).into(holder.mThumbnailImageView);
@@ -134,8 +134,10 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         int position = mMediaItems.size();
         mNullPositions.add(position);
         mMediaItems.add(null);
+        notifyItemInserted(position);
       }
     }
+    //notifyDataSetChanged();
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
   }
 

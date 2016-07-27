@@ -15,8 +15,6 @@ public class EndlessRecyclerView extends RecyclerView {
   private EndlessListener mEndlessListener;
   private int mVerticalThreshold;
   private int mHorizontalThreshold;
-  private int mDistanceFromVerticalEnd;
-  private int mDistanceFromHorizontalEnd;
   private boolean mIsEndless;
   private boolean mCanExpectConsistentItemSize;
   private int mLastRecordedItemHeight;
@@ -119,28 +117,12 @@ public class EndlessRecyclerView extends RecyclerView {
     mCanExpectConsistentItemSize = canExpectConsistentItemSize;
   }
 
-  private void computeDistanceFromVerticalEnd() {
-    mDistanceFromVerticalEnd = getContentHeight() - getVerticalEnd();
-  }
-
-  // TODO: match vertical
-  private void computeDistanceFromHorizontalEnd() {
-
-  }
-
   public int getVerticalEnd() {
     return computeVerticalScrollOffset() + getHeight();
   }
 
   public int getContentHeight() {
     return computeVerticalScrollRange();
-    /*
-    Adapter adapter = getAdapter();
-    if(adapter == null){
-      return 0;
-    }
-    return getAverageOrEstimatedItemHeight() * adapter.getItemCount();
-    */
   }
 
   protected int computeAverageRowHeight() {
@@ -197,44 +179,26 @@ public class EndlessRecyclerView extends RecyclerView {
     return mLastRecordedItemWidth;
   }
 
-
   public void populateVertically() {
     if (getAdapter() == null) {
       return;
     }
-    int shouldFill = getHeight() + mVerticalThreshold;
+    int shouldFill = computeVerticalScrollOffset() + getHeight() + mVerticalThreshold;
     int currentlyFills = getContentHeight();
     int difference = shouldFill - currentlyFills;
     if(difference > 0){
+      Log.d("ERV", "shouldFill=" + shouldFill + ", currentlyFills=" + currentlyFills + ", difference=" + difference);
       int averageHeight = getAverageOrEstimatedItemHeight();
       if(averageHeight > 0) {
         Log.d("ERV", "avg height=" + averageHeight + ", is > 0, proceeding...");
         int quantity = 1 + (difference / averageHeight);
         Log.d("ERV", "number of rows to render=" + quantity);
         if (quantity > 0) {
-          Log.d("ERV", "quantity gt 0, populating");
+          Log.d("ERV", "quantity > 0, populating");
           getEndlessAdapter().fill(quantity);
         }
       }
     }
-    /*
-    int emptySpace = mVerticalThreshold + getVerticalEnd() - getContentHeight();
-    Log.d("ERV", "emptySpace=" + emptySpace + ", distance-threshold=" + (mDistanceFromVerticalEnd - mVerticalThreshold));
-    if(emptySpace > 0){
-      Log.d("ERV", "emptySpace=" + emptySpace + " is > 0, proceeding...");
-      Log.d("ERV", "threshold=" + mVerticalThreshold + ", end=" + getVerticalEnd() + ", content=" + getContentHeight());
-      int averageHeight = getAverageOrEstimatedItemHeight();
-      if(averageHeight > 0) {
-        Log.d("ERV", "avg height=" + averageHeight + ", is > 0, proceeding...");
-        int quantity = 1 + (emptySpace / averageHeight);
-        Log.d("ERV", "number of rows to render=" + quantity);
-        if (quantity > 0) {
-          Log.d("ERV", "quantity gt 0, populating");
-          getEndlessAdapter().fill(quantity);
-        }
-      }
-    }
-    */
   }
 
   public void populateHorizontally() {
@@ -250,14 +214,6 @@ public class EndlessRecyclerView extends RecyclerView {
     }
   }
 
-  private boolean isPastVerticalThreshold(){
-    return mDistanceFromVerticalEnd < mVerticalThreshold;
-  }
-
-  private boolean isPastHorizontalThreshold(){
-    return mDistanceFromHorizontalEnd < mHorizontalThreshold;
-  }
-
   private boolean layoutManagerCanScrollVertically() {
     return getLayoutManager() != null && getLayoutManager().canScrollVertically();
   }
@@ -266,41 +222,16 @@ public class EndlessRecyclerView extends RecyclerView {
     return getLayoutManager() != null && getLayoutManager().canScrollHorizontally();
   }
 
-  private void onVerticalThresholdReached(){
-    if(getAdapter() == null){
-      return;
-    }
-    int averageRowHeight = getAverageOrEstimatedItemHeight();
-    if(averageRowHeight > 0){
-      int quantity = (int) Math.ceil(mDistanceFromVerticalEnd / (double) averageRowHeight);
-      if(quantity > 0) {
-        Log.d("ERV", "threshold reached, " +
-            "distance=" + mDistanceFromVerticalEnd
-            + ", contentHeight=" + getContentHeight()
-            + ", threshold=" + mVerticalThreshold
-            + ", item height=" + averageRowHeight
-            + ", generating " + quantity + " rows");
-        getEndlessAdapter().fill(quantity);
-      }
-    }
-  }
-
   private void onHorizontalThresholdReached(){
 
   }
 
   /* package-private */ void onEndlessScroll(boolean isScrollingHorizontally, boolean isScrollingVertically){
     if(isScrollingVertically) {
-      computeDistanceFromVerticalEnd();
-      if (isPastVerticalThreshold()) {
-        onVerticalThresholdReached();
-      }
+        populateVertically();
     }
-    if(isScrollingHorizontally){
-      computeDistanceFromHorizontalEnd();
-      if(isPastHorizontalThreshold()){
-        onHorizontalThresholdReached();
-      }
+    if(isScrollingHorizontally) {
+      populateVertically();
     }
   }
 
