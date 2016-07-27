@@ -21,13 +21,19 @@ public class MainActivity extends AppCompatActivity {
     final DemoEndlessAdapter demoEndlessAdapter = new DemoEndlessAdapter(this);
     demoEndlessAdapter.setOnItemClickListener(mOnItemClickListener);
     demoEndlessAdapter.setLimit(1000);
+    demoEndlessAdapter.setOnFillCompleteListener(new DemoEndlessAdapter.OnFillCompleteListener() {
+      @Override
+      public void onFillComplete(boolean expectsMore) {
+        Log.d("MA", "onFillComplete, expects more? " + expectsMore);
+        mEndlessRecyclerView.requestLayout();
+      }
+    });
 
     mEndlessRecyclerView = (EndlessRecyclerView) findViewById(R.id.endlessrecyclerview_main);
     mEndlessRecyclerView.setCanExpectConsistentItemSize(true);
     mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
     mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
-    mEndlessRecyclerView.setEstimatedItemHeight(350);
 
   }
 

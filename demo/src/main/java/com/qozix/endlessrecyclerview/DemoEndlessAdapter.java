@@ -26,7 +26,7 @@ import java.util.Queue;
 public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHolder> {
 
   public interface OnFillCompleteListener {
-    void onFillComplete();
+    void onFillComplete(boolean expectsMore);
   }
 
   private MockClient mMockClient;
@@ -41,7 +41,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   public DemoEndlessAdapter(Context context){
     mLayoutInflater = LayoutInflater.from(context);
     mMockClient = new MockClient(context);
-    registerAdapterDataObserver(mAdapterDataObserver);
+    //registerAdapterDataObserver(mAdapterDataObserver);
   }
 
   @Override
@@ -133,10 +133,9 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         int position = mMediaItems.size();
         mNullPositions.add(position);
         mMediaItems.add(null);
-        //notifyItemInserted(position);
+        notifyItemInserted(position);
       }
     }
-    notifyDataSetChanged();
     Log.d("DEA", "requested items, now items owed: " + mNullPositions.size());
   }
 
@@ -163,25 +162,24 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         if(mNullPositions.size() > 0){
           int position = mNullPositions.poll();
           mMediaItems.set(position, mediaItem);
-          //notifyItemChanged(position);
+          notifyItemChanged(position);
         } else {
           if(mMediaItems.size() < mLimit) {
+            int position = mMediaItems.size();
             mMediaItems.add(mediaItem);
-            //notifyItemInserted(mMediaItems.size() - 1);
+            notifyItemInserted(position);
           }
         }
       }
+      mIsFetching = false;
       // strangely, if the initial estimated item height is get height
       // by not providing an estimate, and explicitly disallowing computation from the adapter
-      // the granular notification methods commented out in this method seem to fail
-      // (spinners are not replaced,
-      notifyDataSetChanged();
-      mIsFetching = false;
-      if(mNullPositions.size() == 0) {
-        if(mOnFillCompleteListener != null){
-          mOnFillCompleteListener.onFillComplete();
-        }
-      } else {
+      // the granular notification methods commented out in this method will fail to requestLayout
+      // dispatch it here manually
+      if(mOnFillCompleteListener != null){
+         mOnFillCompleteListener.onFillComplete(mNullPositions.size() > 0);
+      }
+     if(mNullPositions.size() > 0){
         Log.d("DEA", "still have placeholders to fill, launch more");
         fetch(mNullPositions.size());
       }
