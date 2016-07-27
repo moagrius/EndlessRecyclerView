@@ -8,27 +8,31 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Created by michaeldunn on 7/20/16.
  */
 public class EndlessRecyclerView extends RecyclerView {
 
   private EndlessListener mEndlessListener;
-  private int mVerticalThreshold;
-  private int mHorizontalThreshold;
+  private OnPopulationListener mOnPopulationListener;
   private boolean mIsEndless;
   private boolean mCanExpectConsistentItemSize;
-  private int mLastRecordedItemHeight;
-  private int mLastRecordedItemWidth;
-  private int mEstimatedItemHeight;
-  private int mEstimatedItemWidth;
-  private boolean mShouldEstimateHeightUsingAdapter = true;
-  private int mEstimatedItemHeightFromAdapter;
-  private int mEstimatedItemWidthFromAdapter;
+  private boolean mShouldEstimateFromAdapter = true;
   private Ruler mWidthRuler;
   private Ruler mHeightRuler;
+  private Map<Orientation, Integer> mThresholds = new HashMap<>();
+  private Map<Orientation, Integer> mEstimatedItemDimensionsFromAdapter = new HashMap<>();
+  private Map<Orientation, Integer> mEstimatedItemDimensions = new HashMap<>();
+  private Map<Orientation, Integer> mCachedDimensions = new HashMap<>();
 
-  private enum Orientation {
+  public interface OnPopulationListener {
+    void onPopulation(int quantity, Orientation orientation);
+  }
+
+  public enum Orientation {
     HORIZONTAL, VERTICAL
   }
 
@@ -78,21 +82,44 @@ public class EndlessRecyclerView extends RecyclerView {
     return (EndlessAdapter) getAdapter();
   }
 
+  public void setOnPopulationListener(OnPopulationListener onPopulationListener) {
+    mOnPopulationListener = onPopulationListener;
+  }
+
+  /**
+   * Set this to true to skip re-computation of item dimensions, if you expect rows to be a consistent height or width.
+   *
+   * @param canExpectConsistentItemSize
+   */
+  public void setCanExpectConsistentItemSize(boolean canExpectConsistentItemSize) {
+    mCanExpectConsistentItemSize = canExpectConsistentItemSize;
+  }
+
+  protected int getThresholdFromOrientation(Orientation orientation) {
+    if (mThresholds.containsKey(orientation)) {
+      Integer threshold = mThresholds.get(orientation);
+      if (threshold != null) {
+        return threshold;
+      }
+    }
+    return 0;
+  }
+
   public int getVerticalThreshold() {
-    return mVerticalThreshold;
+    return getThresholdFromOrientation(Orientation.VERTICAL);
   }
 
   public int getHorizontalThreshold() {
-    return mHorizontalThreshold;
+    return getThresholdFromOrientation(Orientation.HORIZONTAL);
   }
 
   public void setVerticalThreshold(int threshold) {
-    mVerticalThreshold = threshold;
+    mThresholds.put(Orientation.VERTICAL, threshold);
     onEndlessScroll(false, true);
   }
 
   public void setHorizontalThreshold(int threshold) {
-    mHorizontalThreshold = threshold;
+    mThresholds.put(Orientation.HORIZONTAL, threshold);
     onEndlessScroll(true, false);
   }
 
@@ -100,29 +127,22 @@ public class EndlessRecyclerView extends RecyclerView {
     return mCanExpectConsistentItemSize;
   }
 
-  public boolean isShouldEstimateHeightUsingAdapter() {
-    return mShouldEstimateHeightUsingAdapter;
+  public boolean isShouldEstimateFromAdapter() {
+    return mShouldEstimateFromAdapter;
   }
 
-  public void setShouldEstimateHeightUsingAdapter(boolean shouldEstimateHeightUsingAdapter) {
-    mShouldEstimateHeightUsingAdapter = shouldEstimateHeightUsingAdapter;
+  public void setShouldEstimateFromAdapter(boolean shouldEstimateFromAdapter) {
+    mShouldEstimateFromAdapter = shouldEstimateFromAdapter;
   }
 
-  protected int getEstimatedItemHeightFromAdapter() {
-    if (mShouldEstimateHeightUsingAdapter && mEstimatedItemHeightFromAdapter == 0) {
-      mEstimatedItemHeightFromAdapter = computeItemHeightFromAdapter();
-    }
-    return mEstimatedItemHeightFromAdapter;
-  }
-
-  private int computeDimensionFromAdapter(Orientation orientation){
+  private int computeDimensionFromAdapter(Orientation orientation) {
     if (getAdapter() != null) {
       ViewGroup dummy = new FrameLayout(getContext());
       ViewHolder viewHolder = getAdapter().onCreateViewHolder(dummy, 0);
       View yardstick = viewHolder.itemView;
       int widthMeasureSpec;
       int heightMeasureSpec;
-      switch(orientation){
+      switch (orientation) {
         case VERTICAL:
           widthMeasureSpec = MeasureSpec.makeMeasureSpec(getWidth(), MeasureSpec.AT_MOST);
           heightMeasureSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED);
@@ -138,78 +158,73 @@ public class EndlessRecyclerView extends RecyclerView {
     return 0;
   }
 
-  protected int computeItemHeightFromAdapter() {
-    return computeDimensionFromAdapter(Orientation.VERTICAL);
-  }
-
-  public int getEstimatedItemHeight() {
-    if (mEstimatedItemHeight > 0) {
-      return mEstimatedItemHeight;
+  public int getEstimatedItemDimension(Orientation orientation) {
+    // if we've been provided explicit estimates, use them
+    if (mEstimatedItemDimensions.containsKey(orientation)) {
+      int estimatedDimension = mEstimatedItemDimensions.get(orientation);
+      if (estimatedDimension > 0) {
+        return estimatedDimension;
+      }
     }
-    int estimatedItemHeightFromAdapter = getEstimatedItemHeightFromAdapter();
-    if (estimatedItemHeightFromAdapter > 0) {
-      return estimatedItemHeightFromAdapter;
+    // do we have saved estimates from the adapter?
+    if (mEstimatedItemDimensionsFromAdapter.containsKey(orientation)) {
+      return mEstimatedItemDimensionsFromAdapter.get(orientation);
     }
-    return getHeight();
-  }
-
-  public void setEstimatedItemHeight(int estimatedItemHeight) {
-    mEstimatedItemHeight = estimatedItemHeight;
-  }
-
-  public int getEstimatedItemWidth() {
-    if (mEstimatedItemWidth > 0) {
-      return mEstimatedItemWidth;
+    // if not, let's see what the adapter thinks...
+    int estimatedDimensionFromAdapter = computeDimensionFromAdapter(orientation);
+    // if it looks valid, let's save it so we don't have to reconstruct those views again
+    if (estimatedDimensionFromAdapter > 0) {
+      mEstimatedItemDimensionsFromAdapter.put(orientation, estimatedDimensionFromAdapter);
+      return estimatedDimensionFromAdapter;
     }
-    return getWidth();
+    // nothing has panned out so far, let's return the width or height of this View
+    return getDimensionFromView(orientation, this);
   }
 
-  public void setEstimatedItemWidth(int estimatedItemWidth) {
-    mEstimatedItemWidth = estimatedItemWidth;
-  }
-
-  /**
-   * Set this to true to skip recomputation of row heights, if you expect rows to be a consistent height.
-   *
-   * @param canExpectConsistentItemSize
-   */
-  public void setCanExpectConsistentItemSize(boolean canExpectConsistentItemSize) {
-    mCanExpectConsistentItemSize = canExpectConsistentItemSize;
-  }
-
-  public int getVerticalEnd() {
-    return computeVerticalScrollOffset() + getHeight();
-  }
-
-  public int getContentHeight() {
-    return computeVerticalScrollRange();
-  }
-
-  protected int computeAverageRowHeight() {
-    if (getChildCount() == 0) {
+  private int getExplicitlyEstimatedItemDimension(Orientation orientation) {
+    if (!mEstimatedItemDimensions.containsKey(orientation)) {
       return 0;
     }
-    int totalHeight = 0;
-    for (int i = 0; i < getChildCount(); i++) {
-      View child = getChildAt(i);
-      totalHeight += child.getHeight();
-    }
-    return totalHeight / getChildCount();
+    return mEstimatedItemDimensions.get(orientation);
   }
 
-  protected int computeAverageColumnWidth() {
-    if (getChildCount() == 0) {
-      return 0;
-    }
-    int totalWidth = 0;
-    for (int i = 0; i < getChildCount(); i++) {
-      View child = getChildAt(i);
-      totalWidth += child.getWidth();
-    }
-    return totalWidth / getChildCount();
+  public void setExplicitlyEstimatedItemHeight(int estimatedItemHeight) {
+    mEstimatedItemDimensions.put(Orientation.VERTICAL, estimatedItemHeight);
   }
 
-  protected int computeAverageItemDimension(Ruler ruler){
+  public int getExplicitlyEstimatedItemHeight() {
+    return getExplicitlyEstimatedItemDimension(Orientation.VERTICAL);
+  }
+
+  public void setExplicitlyEstimatedItemWidth(int estimatedItemWidth) {
+    mEstimatedItemDimensions.put(Orientation.HORIZONTAL, estimatedItemWidth);
+  }
+
+  public int getExplicitlyEstimatedItemWidth() {
+    return getExplicitlyEstimatedItemDimension(Orientation.HORIZONTAL);
+  }
+
+  public int getContentSize(Orientation orientation) {
+    switch (orientation) {
+      case VERTICAL:
+        return computeVerticalScrollRange();
+      case HORIZONTAL:
+        return computeHorizontalScrollRange();
+    }
+    return 0;
+  }
+
+  public int getScrollPosition(Orientation orientation) {
+    switch (orientation) {
+      case VERTICAL:
+        return computeVerticalScrollOffset();
+      case HORIZONTAL:
+        return computeHorizontalScrollOffset();
+    }
+    return 0;
+  }
+
+  protected int computeAverageItemDimension(Ruler ruler) {
     if (getChildCount() == 0) {
       return 0;
     }
@@ -221,13 +236,13 @@ public class EndlessRecyclerView extends RecyclerView {
     return total / getChildCount();
   }
 
-  protected int computeAverageItemDimension(Orientation orientation){
+  protected int computeAverageItemDimension(Orientation orientation) {
     Ruler ruler = getRulerFromOrientation(orientation);
     return computeAverageItemDimension(ruler);
   }
 
-  private Ruler getRulerFromOrientation(Orientation orientation){
-    switch(orientation){
+  private Ruler getRulerFromOrientation(Orientation orientation) {
+    switch (orientation) {
       case VERTICAL:
         return getHeightRuler();
       case HORIZONTAL:
@@ -236,9 +251,9 @@ public class EndlessRecyclerView extends RecyclerView {
     return null;
   }
 
-  private Ruler getWidthRuler(){
-    if(mWidthRuler == null){
-      mWidthRuler = new Ruler(){
+  private Ruler getWidthRuler() {
+    if (mWidthRuler == null) {
+      mWidthRuler = new Ruler() {
         @Override
         public int get(View view) {
           return view.getWidth();
@@ -248,99 +263,105 @@ public class EndlessRecyclerView extends RecyclerView {
     return mWidthRuler;
   }
 
-  private Ruler getHeightRuler(){
-    if(mHeightRuler == null){
+  private Ruler getHeightRuler() {
+    if (mHeightRuler == null) {
       mHeightRuler = new Ruler() {
         @Override
         public int get(View view) {
-          return view.getHeight();  // TODO: will work with adapter measurements when not on screen?
+          return view.getHeight();
         }
       };
     }
     return mHeightRuler;
   }
 
-  protected int getAverageItemHeight() {
-    if (!mCanExpectConsistentItemSize || mLastRecordedItemHeight == 0) {
-      mLastRecordedItemHeight = computeAverageItemDimension(Orientation.VERTICAL);
+  private int getDimensionFromView(Orientation orientation, View view) {
+    Ruler ruler = getRulerFromOrientation(orientation);
+    if (ruler == null) {
+      return 0;
     }
-    return mLastRecordedItemHeight;
+    return ruler.get(view);
   }
 
-  protected int getAverageOrEstimatedItemHeight() {
-    int averageHeight = getAverageItemHeight();
-    if (averageHeight > 0) {
-      return averageHeight;
+  protected int getCachedDimension(Orientation orientation) {
+    if (mCachedDimensions.containsKey(orientation)) {
+      Integer cachedDimension = mCachedDimensions.get(orientation);
+      if (cachedDimension != null) {
+        return cachedDimension;
+      }
     }
-    return getEstimatedItemHeight();
+    return 0;
   }
 
-  protected int getAverageOrEstimatedItemWidth() {
-    int averageWidth = getAverageItemWidth();
-    if (averageWidth > 0) {
-      return averageWidth;
+  protected int getAverageItemSize(Orientation orientation) {
+    if (mCanExpectConsistentItemSize) {
+      int cachedDimension = getCachedDimension(orientation);
+      if (cachedDimension > 0) {
+        return cachedDimension;
+      }
     }
-    return getEstimatedItemWidth();
-  }
-
-  protected int getAverageItemWidth() {
-    if (!mCanExpectConsistentItemSize || mLastRecordedItemWidth == 0) {
-      mLastRecordedItemWidth = computeAverageColumnWidth();
+    int computedDimension = computeAverageItemDimension(orientation);
+    if (computedDimension > 0 && mCanExpectConsistentItemSize) {
+      mCachedDimensions.put(orientation, computedDimension);
     }
-    return mLastRecordedItemWidth;
+    return computedDimension;
   }
 
-  protected int computeVerticalSpaceToMeetThreshold(){
-    int shouldFill = computeVerticalScrollOffset() + getHeight() + mVerticalThreshold;
-    int currentlyFills = getContentHeight();
-    return shouldFill - currentlyFills;
+  protected int getAverageOrEstimatedItemSize(Orientation orientation) {
+    int averageSize = getAverageItemSize(orientation);
+    if (averageSize > 0) {
+      return averageSize;
+    }
+    return getEstimatedItemDimension(orientation);
   }
 
-  public void populateVertically() {
+  protected int computeSpaceToBeFilled(Orientation orientation) {
+    return getScrollPosition(orientation) + getDimensionFromView(orientation, this) + getThresholdFromOrientation(orientation);
+  }
+
+  protected int computeSpaceToMeetThreshold(Orientation orientation) {
+    return computeSpaceToBeFilled(orientation) - getContentSize(orientation);
+  }
+
+  public void populate(Orientation orientation) {
     if (getAdapter() == null) {
       return;
     }
-    int space = computeVerticalSpaceToMeetThreshold();
+    int space = computeSpaceToMeetThreshold(orientation);
     if (space > 0) {
-      int averageHeight = getAverageOrEstimatedItemHeight();
-      if (averageHeight > 0) {
-        int quantity = 1 + (space / averageHeight);
+      int averageItemSize = getAverageOrEstimatedItemSize(orientation);
+      if (averageItemSize > 0) {
+        int quantity = 1 + (space / averageItemSize);
         if (quantity > 0) {
           getEndlessAdapter().fill(quantity);
+          if (mOnPopulationListener != null) {
+            mOnPopulationListener.onPopulation(quantity, orientation);
+          }
         }
       }
     }
   }
 
-  public void populateHorizontally() {
-    // TODO:
-  }
-
   public void populate() {
     if (getLayoutManager() != null && getLayoutManager().canScrollVertically()) {
-      populateVertically();
+      populate(Orientation.VERTICAL);
     }
     if (getLayoutManager() != null && getLayoutManager().canScrollHorizontally()) {
-      populateHorizontally();
+      populate(Orientation.HORIZONTAL);
     }
   }
 
   /* package-private */ void onEndlessScroll(boolean isScrollingHorizontally, boolean isScrollingVertically) {
     if (isScrollingVertically) {
-      populateVertically();
+      populate(Orientation.VERTICAL);
     }
     if (isScrollingHorizontally) {
-      populateVertically();
+      populate(Orientation.HORIZONTAL);
     }
-  }
-
-  public void trigger() {
-    onEndlessScroll(true, true);
   }
 
   private void recomputeItemHeights() {
-    mLastRecordedItemWidth = 0;
-    mLastRecordedItemHeight = 0;
+    mCachedDimensions.clear();
   }
 
   // Fires when this ViewGroup's dimensions are changed

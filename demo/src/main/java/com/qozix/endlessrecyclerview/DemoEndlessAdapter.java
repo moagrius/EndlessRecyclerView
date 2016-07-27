@@ -41,7 +41,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   public DemoEndlessAdapter(Context context){
     mLayoutInflater = LayoutInflater.from(context);
     mMockClient = new MockClient(context);
-    //registerAdapterDataObserver(mAdapterDataObserver);
   }
 
   @Override
@@ -120,12 +119,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
   }
 
   @Override
-  public void fill(int quantity){
-    super.fill(quantity);
-    Log.d("DEA", "fill(" + quantity + "), total=" + mMediaItems.size());
-  }
-
-  @Override
   public void pad(int quantity) {
     Log.d("DEA", "pad: " + quantity);
     for(int i = 0; i < quantity; i++){
@@ -176,10 +169,11 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
       // by not providing an estimate, and explicitly disallowing computation from the adapter
       // the granular notification methods commented out in this method will fail to requestLayout
       // dispatch it here manually
+      boolean expectAnotherFetch = mNullPositions.size() > 0;
       if(mOnFillCompleteListener != null){
-         mOnFillCompleteListener.onFillComplete(mNullPositions.size() > 0);
+         mOnFillCompleteListener.onFillComplete(expectAnotherFetch);
       }
-     if(mNullPositions.size() > 0){
+     if(expectAnotherFetch){
         Log.d("DEA", "still have placeholders to fill, launch more");
         fetch(mNullPositions.size());
       }
