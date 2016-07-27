@@ -98,7 +98,7 @@ public class EndlessRecyclerView extends RecyclerView {
   }
 
   private void computeDistanceFromVerticalEnd(){
-    mDistanceFromVerticalEnd = computeVerticalScrollRange() - computeVerticalScrollOffset() - getHeight();
+    mDistanceFromVerticalEnd = computeVerticalScrollRange() - computeVerticalScrollOffset();
   }
 
   private void computeDistanceFromHorizontalEnd(){
@@ -159,7 +159,7 @@ public class EndlessRecyclerView extends RecyclerView {
     }
     int averageRowHeight = getAverageRowHeight();
     if(averageRowHeight > 0){
-      int quantity = 1 + mDistanceFromVerticalEnd / averageRowHeight;
+      int quantity = 1 + getHeight() / averageRowHeight;
       getEndlessAdapter().fill(quantity);
     }
   }
