@@ -32,17 +32,10 @@ If your `RecyclerView` is displaying local data, or data sets that can be constr
 step is unnecessary.
 
 ## Installation
+EndlessRecyclerView is available on jcenter.  Make sure `jcenter` is in your module's build.gradle repositories
+(default for Android Studio).  Then add the following line to your dependencies:
 ```
 compile 'com.qozix:endlessrecyclerview:1.0'
-```
-
-Until it's on jcenter, you'll need to include this maven location in your module's build.gradle as a top-level item:
-```
-repositories {
-  maven {
-    url 'https://dl.bintray.com/moagrius/maven'
-  }
-}
 ```
 
 ## Usage
