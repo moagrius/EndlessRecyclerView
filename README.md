@@ -13,7 +13,6 @@ A correctly configured `EndlessRecyclerView` will behave as if the content were 
 or flinging as far as the developer instructs.
 
 ## How does it work?
-
 Specify a threshold, in pixels.  This is an arbitrary value and can be dynamic - e.g., you could set the threshold
 to three times the height of the RecyclerView, updating the value in `onLayout`.  Once a threshold is set,
 any scroll operation will measure the existing content against the current scroll and dimension of the recycler view -
@@ -37,6 +36,15 @@ step is unnecessary.
 compile 'com.qozix:endlessrecyclerview:1.0'
 ```
 
+Until it's on jcenter, you'll need to include this maven location in your module's build.gradle as a top-level item:
+```
+repositories {
+  maven {
+    url 'https://dl.bintray.com/moagrius/maven'
+  }
+}
+```
+
 ## Usage
 Use `EndlessRecyclerView` in place of a normal `RecyclerView`.  Set your threshold using
  `setVerticalThreshold(int threshold)` for vertical layouts, or the horizontal version for horizontal layouts.
@@ -46,4 +54,7 @@ method defined: `fill(int quantity)`.  This method should handle adding items to
 the bounds defined by your threshold.
 
 ## Documentation
-JavaDocs are [here](http://example.com)
+JavaDocs are included in the repo, under the top-level `docs` directory.
+
+## Demo
+A simple demo module is included in the repo.
