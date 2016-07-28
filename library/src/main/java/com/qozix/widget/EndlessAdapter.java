@@ -10,29 +10,10 @@ import android.support.v7.widget.RecyclerView;
 public abstract class EndlessAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
   /**
-   * Fill.
+   * Fill the dataset with enough items to meet the specified threshold.
    *
    * @param quantity the quantity
    */
-  public void fill(int quantity) {
-    if (quantity > 0) {
-      pad(quantity);
-      fetch(quantity);
-    }
-  }
-
-  /**
-   * Pad.
-   *
-   * @param quantity the quantity
-   */
-  public abstract void pad(int quantity);
-
-  /**
-   * Fetch.
-   *
-   * @param quantity the quantity
-   */
-  public abstract void fetch(int quantity);
+  public abstract void fill(int quantity);
 
 }

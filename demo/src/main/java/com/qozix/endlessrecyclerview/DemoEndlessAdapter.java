@@ -118,8 +118,13 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
     return mMediaItems.size() < mLimit || !mNullPositions.isEmpty();
   }
 
+
+  /**
+   *
+   * @param quantity
+   */
   @Override
-  public void pad(int quantity) {
+  public void fill(int quantity) {
     for (int i = 0; i < quantity; i++) {
       if (mMediaItems.size() < mLimit) {
         int position = mMediaItems.size();
@@ -128,6 +133,7 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
         notifyItemInserted(position);
       }
     }
+    fetch(quantity);
   }
 
   /**
@@ -136,7 +142,6 @@ public class DemoEndlessAdapter extends EndlessAdapter<DemoEndlessAdapter.ItemHo
    *
    * @param quantity
    */
-  @Override
   public void fetch(int quantity) {
     if (!mIsFetching && canUseMoreDataFromServer()) {
       mIsFetching = true;
