@@ -2,8 +2,8 @@
 
 Endless/infinite RecyclerView with smooth scroll and fling...
 
-![erv2](https://cloud.githubusercontent.com/assets/701344/17218804/c0d99fe4-54ae-11e6-977f-1394c5a40f1b.gif)
-![erv3](https://cloud.githubusercontent.com/assets/701344/17451342/a8a4a616-5b2b-11e6-9cbd-3f68c922c28e.gif)
+![Mock Network Demo](https://cloud.githubusercontent.com/assets/701344/17218804/c0d99fe4-54ae-11e6-977f-1394c5a40f1b.gif)
+![Simple Demo](https://cloud.githubusercontent.com/assets/701344/17451342/a8a4a616-5b2b-11e6-9cbd-3f68c922c28e.gif)
 
 Most open source endless `ListView` or `RecyclerView` implementations in Android have poor UX; a scroll or fling action
 will stop when the list reaches its current capacity, the more data is loaded - some more sophisticated
@@ -51,4 +51,5 @@ the bounds defined by your threshold.
 JavaDocs are included in the repo, under the top-level `docs` directory.
 
 ## Demo
-A simple demo module is included in the repo.
+There is a demo module included in the repo.  The `SimpleDemoActivity` uses a very straightforward implementation,
+while the `MockNetworkDemoActivity` uses some of the more advanced techniques described above.
