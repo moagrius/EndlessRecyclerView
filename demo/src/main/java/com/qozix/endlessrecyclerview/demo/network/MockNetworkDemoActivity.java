@@ -1,4 +1,4 @@
-package com.qozix.endlessrecyclerview;
+package com.qozix.endlessrecyclerview.demo.network;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -6,9 +6,14 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.view.View;
 
+import com.qozix.endlessrecyclerview.R;
+import com.qozix.endlessrecyclerview.demo.MainActivity;
 import com.qozix.widget.EndlessRecyclerView;
 
-public class MainActivity extends AppCompatActivity {
+/**
+ * Created by michaeldunn on 8/5/16.
+ */
+public class MockNetworkDemoActivity extends AppCompatActivity {
 
   private EndlessRecyclerView mEndlessRecyclerView;
 
@@ -16,12 +21,12 @@ public class MainActivity extends AppCompatActivity {
   protected void onCreate(Bundle savedInstanceState) {
 
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_main);
+    setContentView(R.layout.endlessrecyclerview);
 
-    final DemoEndlessAdapter demoEndlessAdapter = new DemoEndlessAdapter(this);
-    demoEndlessAdapter.setOnItemClickListener(mOnItemClickListener);
-    demoEndlessAdapter.setLimit(1000);
-    demoEndlessAdapter.setOnFillCompleteListener(new DemoEndlessAdapter.OnFillCompleteListener() {
+    final MockNetworkDemoEndlessAdapter mockNetworkDemoEndlessAdapter = new MockNetworkDemoEndlessAdapter(this);
+    mockNetworkDemoEndlessAdapter.setOnItemClickListener(mOnItemClickListener);
+    mockNetworkDemoEndlessAdapter.setLimit(1000);
+    mockNetworkDemoEndlessAdapter.setOnFillCompleteListener(new MockNetworkDemoEndlessAdapter.OnFillCompleteListener() {
       @Override
       public void onFillComplete(boolean expectsMore) {
         mEndlessRecyclerView.requestLayout();
@@ -30,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
     mEndlessRecyclerView = (EndlessRecyclerView) findViewById(R.id.endlessrecyclerview_main);
     mEndlessRecyclerView.setCanExpectConsistentItemSize(true);
-    mEndlessRecyclerView.setAdapter(demoEndlessAdapter);
+    mEndlessRecyclerView.setAdapter(mockNetworkDemoEndlessAdapter);
     mEndlessRecyclerView.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
     mEndlessRecyclerView.addOnLayoutChangeListener(mOnLayoutChangeListener);
 

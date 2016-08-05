@@ -1,11 +1,11 @@
-package com.qozix.endlessrecyclerview;
+package com.qozix.endlessrecyclerview.demo.network;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
 import com.google.gson.Gson;
-import com.qozix.endlessrecyclerview.models.JsonResponse;
+import com.qozix.endlessrecyclerview.demo.models.JsonResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
