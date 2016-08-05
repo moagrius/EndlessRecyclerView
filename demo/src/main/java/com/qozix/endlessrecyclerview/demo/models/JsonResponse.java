@@ -1,4 +1,4 @@
-package com.qozix.endlessrecyclerview.models;
+package com.qozix.endlessrecyclerview.demo.models;
 
 import java.util.List;
 
